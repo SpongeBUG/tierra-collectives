@@ -20,9 +20,6 @@ export function ProductGrid({ products, className = '', columns = 4 }: ProductGr
       </div>
     );
   }
-
-  // Debug product data to help identify issues
-  console.log(`Rendering ProductGrid with ${products.length} products`);
   
   return (
     <div className={cn(`grid gap-6 ${gridCols}`, className)}>

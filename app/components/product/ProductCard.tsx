@@ -1,11 +1,10 @@
 // app/components/product/ProductCard.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '@remix-run/react';
 import { Eye, ShoppingCart, Heart } from 'lucide-react';
 import type { Product } from '~/types';
 import { Card } from '~/components/ui/Card';
 import { formatPrice, truncateText } from '~/lib/utils';
-import { Button } from '~/components/ui/Button';
 import { useCart } from '~/context/CartContext';
 import { StarIcon } from '~/components/icons';
 
@@ -15,21 +14,34 @@ interface ProductCardProps {
   featured?: boolean;
 }
 
+// Create a map of product types to reliable image URLs
+const RELIABLE_IMAGES = {
+  'Home Decor': 'https://via.placeholder.com/400x500/f0e6dd/1e293b?text=Home+Decor',
+  'Wall Art': 'https://via.placeholder.com/400x500/e6e2f0/1e293b?text=Wall+Art',
+  'Kitchen & Dining': 'https://via.placeholder.com/400x500/e2f0e6/1e293b?text=Kitchen+Dining',
+  'Jewelry': 'https://via.placeholder.com/400x500/f0e2e6/1e293b?text=Jewelry',
+  'default': 'https://via.placeholder.com/400x500/e2e8f0/1e293b?text=Product+Image'
+};
+
 export function ProductCard({ product, className = '', featured = false }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [primaryImageSrc, setPrimaryImageSrc] = useState('');
   const { addItem } = useCart();
   
-  // Get primary image or use placeholder
-  const primaryImage = product.images && product.images.length > 0 ? product.images[0] : {
-    url: 'https://via.placeholder.com/400x500?text=No+Image',
-    altText: product.title,
-    width: 400,
-    height: 500,
-  };
+  // Set up reliable image sources
+  useEffect(() => {
+    // Get primary image from product or use reliable placeholder
+    const productType = product.productType || 'default';
+    const reliableImage = RELIABLE_IMAGES[productType as keyof typeof RELIABLE_IMAGES] || RELIABLE_IMAGES.default;
+    
+    // If product has images, use the first one, otherwise use placeholder
+    if (product.images && product.images.length > 0) {
+      setPrimaryImageSrc(product.images[0].url);
+    } else {
+      setPrimaryImageSrc(reliableImage);
+    }
+  }, [product]);
   
-  // Get second image for hover effect if available
-  const secondaryImage = product.images && product.images.length > 1 ? product.images[1] : primaryImage;
-
   // Get primary variant for pricing
   const primaryVariant = product.variants[0];
   const price = primaryVariant?.price.amount || '0.00';
@@ -49,16 +61,9 @@ export function ProductCard({ product, className = '', featured = false }: Produ
     }
   };
 
-  // For debugging
-  console.log(`ProductCard for ${product.title}:`, { 
-    primaryImageUrl: primaryImage.url,
-    secondaryImageUrl: secondaryImage.url,
-    hasImages: product.images?.length > 0
-  });
-
   return (
     <Card 
-      className={`group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${featured ? 'border-terracotta' : ''} ${className}`}
+      className={`group overflow-hidden border border-border hover:shadow-md ${featured ? 'border-terracotta' : ''} ${className}`}
     >
       <Link 
         to={`/products/${product.handle}`} 
@@ -66,41 +71,19 @@ export function ProductCard({ product, className = '', featured = false }: Produ
         className="block"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onTouchStart={() => setIsHovered(true)}
-        onTouchEnd={() => setIsHovered(false)}
       >
         <div className="relative overflow-hidden aspect-[3/4]">
-          {/* Product Image with hover effect */}
-          <div className="absolute inset-0 w-full h-full transition-opacity duration-500">
-            <img
-              src={primaryImage.url}
-              alt={primaryImage.altText || product.title}
-              className={`h-full w-full object-cover transition-opacity duration-500 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
-              loading="lazy"
-              onError={(e) => {
-                // Fallback if image fails to load
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x500?text=Image+Not+Found';
-              }}
-            />
-          </div>
-          
-          {/* Secondary image that appears on hover */}
-          <div className="absolute inset-0 w-full h-full">
-            <img
-              src={secondaryImage.url}
-              alt={secondaryImage.altText || `${product.title} alternate view`}
-              className={`h-full w-full object-cover transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-              loading="lazy"
-              onError={(e) => {
-                // Fallback if image fails to load
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x500?text=Image+Not+Found';
-              }}
-            />
-          </div>
+          {/* Product image */}
+          <img
+            src={primaryImageSrc}
+            alt={product.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
           
           {/* Sale tag */}
           {discountPercentage && (
-            <div className="absolute top-3 left-3 bg-terracotta text-ivory px-2 py-1 text-xs font-medium rounded-md shadow-sm">
+            <div className="absolute top-3 left-3 bg-terracotta text-ivory px-2 py-1 text-xs font-medium rounded-md">
               {discountPercentage}% OFF
             </div>
           )}
@@ -121,14 +104,13 @@ export function ProductCard({ product, className = '', featured = false }: Produ
           )}
           
           {/* Quick action buttons that appear on hover */}
-          <div className={`absolute bottom-0 left-0 right-0 p-3 flex justify-center space-x-2 bg-gradient-to-t from-offblack/80 to-transparent transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`absolute bottom-0 left-0 right-0 p-3 flex justify-center space-x-2 bg-gradient-to-t from-offblack/80 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             <button 
               className="p-2 bg-ivory rounded-full text-offblack hover:bg-beige transition-colors"
               aria-label="Quick view"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Quick view functionality would go here
               }}
             >
               <Eye className="h-4 w-4" />
@@ -153,7 +135,6 @@ export function ProductCard({ product, className = '', featured = false }: Produ
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Wishlist functionality would go here
               }}
             >
               <Heart className="h-4 w-4" />

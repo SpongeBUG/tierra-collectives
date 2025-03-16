@@ -1,20 +1,23 @@
 // app/routes/products._index.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData, useSearchParams, useNavigate, useNavigation } from '@remix-run/react';
+import { useLoaderData, useSearchParams, useNavigation } from '@remix-run/react';
 import { MainLayout } from '~/components/layout/MainLayout';
 import { ProductGrid } from '~/components/product/ProductGrid';
 import { ProductGridSkeleton } from '~/components/product/ProductGridSkeleton';
 import { Button } from '~/components/ui/Button';
 import { FadeIn } from '~/components/ui/animation/FadeIn';
+import { SlideIn } from '~/components/ui/animation/SlideIn';
+import { Filter, ChevronDown, X } from 'lucide-react';
 import productService from '~/services/product.server';
 import type { Product } from '~/types';
+import { formatPrice } from '~/lib/utils';
 
 export const meta: MetaFunction = () => {
   return [
     { title: 'All Products | Tierra Collectives' },
-    { name: 'description', content: 'Browse our complete collection of handcrafted products.' },
+    { name: 'description', content: 'Browse our complete collection of handcrafted products made by skilled artisans from around the world.' },
   ];
 };
 
@@ -61,9 +64,8 @@ const SORT_OPTIONS = [
 export default function Products() {
   const { products, error } = useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const navigation = useNavigation();
-const isLoading = navigation.state === 'loading';
+  const isLoading = navigation.state === 'loading';
   
   // Filter and sort states
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All Categories');
@@ -74,6 +76,7 @@ const isLoading = navigation.state === 'loading';
   });
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   
   // Apply filters and sorting
   useEffect(() => {
@@ -174,101 +177,54 @@ const isLoading = navigation.state === 'loading';
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-12">
-        <FadeIn>
-          <h1 className="mb-8 text-3xl font-bold">All Products</h1>
-        </FadeIn>
-        
-        {error ? (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-red-700">{error}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-            {/* Filters Sidebar */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="mb-4 text-lg font-medium">Categories</h3>
-                <div className="space-y-2">
-                  {CATEGORIES.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => handleCategoryChange(category)}
-                      className={`block w-full text-left ${
-                        selectedCategory === category
-                          ? 'font-medium text-blue-600'
-                          : 'text-gray-600 hover:text-blue-600'
-                      }`}
-                      disabled={isLoading || isFiltering}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="mb-4 text-lg font-medium">Price Range</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      value={priceRange.min}
-                      onChange={(e) => handlePriceChange(parseInt(e.target.value) || 0, priceRange.max)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                      min="0"
-                      placeholder="Min"
-                      disabled={isLoading || isFiltering}
-                    />
-                    <span>to</span>
-                    <input
-                      type="number"
-                      value={priceRange.max}
-                      onChange={(e) => handlePriceChange(priceRange.min, parseInt(e.target.value) || 1000)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                      min="0"
-                      placeholder="Max"
-                      disabled={isLoading || isFiltering}
-                    />
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handlePriceChange(0, 1000)}
-                    size="sm"
-                    className="w-full"
-                    disabled={isLoading || isFiltering}
-                  >
-                    Reset Price
-                  </Button>
-                </div>
-              </div>
-              
-              <div>
-                <Button
-                  variant="outline"
-                  onClick={handleResetFilters}
-                  className="w-full"
-                  disabled={isLoading || isFiltering}
-                >
-                  Reset All Filters
-                </Button>
-              </div>
+      {/* Hero Section */}
+      <div className="bg-offblack text-ivory py-16">
+        <div className="container-custom text-center">
+          <h1 className="font-serif text-5xl font-bold mb-4">All Products</h1>
+          <p className="text-xl max-w-2xl mx-auto text-ivory/80">
+            Discover our curated collection of handcrafted products made by 
+            skilled artisans from around the world.
+          </p>
+        </div>
+      </div>
+      
+      <div className="bg-ivory dark:bg-offblack py-12">
+        <div className="container-custom">
+          {error ? (
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-6 text-center">
+              <p className="text-red-700 dark:text-red-300 text-lg">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+              >
+                Try Again
+              </Button>
             </div>
-            
-            {/* Products Grid */}
-            <div className="md:col-span-3">
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-gray-600">
-                  {isLoading || isFiltering ? 'Loading products...' : 
-                    `Showing ${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''}`}
-                </p>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Sort by:</span>
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-5 w-5 text-muted-foreground" />
+                  <button
+                    onClick={() => setShowFilters(!showFilters)} 
+                    className="text-sm font-medium flex items-center gap-1 md:hidden"
+                  >
+                    Filters
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <div className="hidden md:block">
+                    <span className="text-muted-foreground">
+                      Showing {filteredProducts.length} products
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <label className="text-sm text-muted-foreground">Sort by:</label>
                   <select
                     value={selectedSort}
                     onChange={handleSortChange}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                    disabled={isLoading || isFiltering}
+                    className="rounded-md border border-border bg-background px-3 py-2 text-sm"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -279,27 +235,116 @@ const isLoading = navigation.state === 'loading';
                 </div>
               </div>
               
-              {isLoading || isFiltering ? (
-                <ProductGridSkeleton count={12} />
-              ) : (
-                <ProductGrid products={filteredProducts} />
-              )}
-              
-              {!isLoading && !isFiltering && filteredProducts.length === 0 && (
-                <div className="mt-12 rounded-md bg-gray-50 p-8 text-center">
-                  <p className="text-gray-500">No products match your filter criteria.</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleResetFilters}
-                    className="mt-4"
-                  >
-                    Reset Filters
-                  </Button>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {/* Filters Sidebar */}
+                <div className={`${showFilters ? 'block' : 'hidden'} md:block`}>
+                  <div className="bg-white dark:bg-offblack-light p-6 rounded-lg border border-border">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl font-serif font-medium">Filters</h2>
+                      <Button 
+                        variant="link" 
+                        onClick={handleResetFilters} 
+                        className="text-terracotta text-sm"
+                      >
+                        Reset All
+                      </Button>
+                    </div>
+                    
+                    {/* Categories */}
+                    <div className="mb-6">
+                      <h3 className="text-base font-medium mb-3">Categories</h3>
+                      <div className="space-y-2">
+                        {CATEGORIES.map((category) => (
+                          <button
+                            key={category}
+                            onClick={() => handleCategoryChange(category)}
+                            className={`block w-full text-left py-1 px-2 rounded ${
+                              selectedCategory === category
+                                ? 'bg-terracotta/10 text-terracotta font-medium'
+                                : 'hover:bg-muted/60'
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Price Range */}
+                    <div>
+                      {/* <h3 className="text-base font-medium mb-3">Price Range</h3>
+                      <div className="flex space-x-4 mb-4">
+                        <div className="w-1/2">
+                          <label htmlFor="min-price" className="sr-only">Min Price</label>
+                          <input
+                            id="min-price"
+                            type="number"
+                            value={priceRange.min}
+                            onChange={(e) => handlePriceChange(parseInt(e.target.value) || 0, priceRange.max)}
+                            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                            placeholder="Min"
+                          />
+                        </div>
+                        <div className="w-1/2">
+                          <label htmlFor="max-price" className="sr-only">Max Price</label>
+                          <input
+                            id="max-price"
+                            type="number"
+                            value={priceRange.max}
+                            onChange={(e) => handlePriceChange(priceRange.min, parseInt(e.target.value) || 1000)}
+                            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                            placeholder="Max"
+                          />
+                        </div>
+                      </div> */}
+                      
+                      {/* Applied Filters */}
+                      {(selectedCategory !== 'All Categories' || priceRange.min > 0 || priceRange.max < 1000) && (
+                        <div className="mt-6 pt-6 border-t border-border">
+                          <h3 className="text-base font-medium mb-3">Applied Filters</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedCategory !== 'All Categories' && (
+                              <div className="bg-terracotta/10 text-terracotta text-sm px-3 py-1 rounded-full flex items-center">
+                                {selectedCategory}
+                                <button onClick={() => handleCategoryChange('All Categories')} className="ml-2">
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                            
+                            {(priceRange.min > 0 || priceRange.max < 1000) && (
+                              <div className="bg-terracotta/10 text-terracotta text-sm px-3 py-1 rounded-full flex items-center">
+                                {formatPrice(priceRange.min)} - {formatPrice(priceRange.max)}
+                                <button onClick={() => handlePriceChange(0, 1000)} className="ml-2">
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+                
+                {/* Products Grid */}
+                <div className="md:col-span-3">
+                  {isLoading || isFiltering ? (
+                    <ProductGridSkeleton count={8} />
+                  ) : filteredProducts.length > 0 ? (
+                    <ProductGrid products={filteredProducts} />
+                  ) : (
+                    <div className="text-center py-16 bg-muted/30 rounded-lg">
+                      <h3 className="text-xl font-medium mb-2">No Products Found</h3>
+                      <p className="text-muted-foreground mb-4">Try adjusting your filters to find what you're looking for.</p>
+                      <Button onClick={handleResetFilters}>Reset Filters</Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
