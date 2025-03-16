@@ -1,0 +1,133 @@
+/* app/styles/theme.css */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 30% 96%;
+    --foreground: 20 10% 5%;
+    
+    --card: 40 30% 96%;
+    --card-foreground: 20 10% 5%;
+    
+    --popover: 40 30% 96%;
+    --popover-foreground: 20 10% 5%;
+    
+    --primary: 12 54% 51%;
+    --primary-foreground: 40 30% 96%;
+    
+    --secondary: 42 68% 68%;
+    --secondary-foreground: 20 10% 5%;
+    
+    --muted: 40 10% 90%;
+    --muted-foreground: 20 10% 40%;
+    
+    --accent: 142 25% 40%;
+    --accent-foreground: 40 30% 96%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 40 30% 96%;
+    
+    --border: 20 10% 85%;
+    --input: 20 10% 85%;
+    --ring: 12 54% 51%;
+    
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+  /* Background & foreground with better contrast */
+  --background: 20 12% 8%; /* Darker, richer background */
+  --foreground: 40 30% 92%; /* Brighter text for better readability */
+  
+  /* Card elements with subtle contrast from background */
+  --card: 20 12% 12%; /* Slightly lighter than background */
+  --card-foreground: 40 30% 95%; /* Bright, easily readable text */
+  
+  /* Popover elements */
+  --popover: 20 12% 10%;
+  --popover-foreground: 40 30% 95%;
+  
+  /* Keep primary (terracotta) vibrant in dark mode */
+  --primary: 12 60% 55%; /* Brighter terracotta for dark backgrounds */
+  --primary-foreground: 40 30% 98%;
+  
+  /* Secondary (beige) adjusted for dark mode */
+  --secondary: 42 68% 65%; /* Brighter beige */
+  --secondary-foreground: 20 10% 5%;
+  
+  /* Muted elements with better visibility */
+  --muted: 20 10% 20%; /* Lighter than before */
+  --muted-foreground: 40 15% 75%; /* Higher contrast for better readability */
+  
+  /* Accent for buttons and highlights */
+  --accent: 142 25% 45%; /* Brighter accent color */
+  --accent-foreground: 40 30% 98%;
+  
+  /* Destructive elements (errors, warnings) */
+  --destructive: 0 74% 55%; /* Brighter red that stands out */
+  --destructive-foreground: 40 30% 98%;
+  
+  /* Borders and input controls */
+  --border: 20 10% 25%; /* More visible borders */
+  --input: 20 10% 25%;
+  --ring: 12 60% 55%; /* Match primary for coherence */
+}
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+  h3 {
+    @apply text-2xl md:text-3xl font-semibold;
+  }
+  h4 {
+    @apply text-xl font-semibold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-terracotta text-ivory px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-terracotta-dark hover:shadow-md active:translate-y-0.5;
+  }
+  
+  .btn-secondary {
+    @apply bg-beige text-offblack px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-beige-dark hover:shadow-md active:translate-y-0.5;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-terracotta text-terracotta bg-transparent px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-terracotta/10 hover:shadow-md active:translate-y-0.5;
+  }
+  
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+  
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-24;
+  }
+
+  .product-card {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .product-image-hover {
+    @apply transition-all duration-500 transform hover:scale-105;
+  }
+}

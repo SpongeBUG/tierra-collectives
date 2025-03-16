@@ -1,0 +1,28 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "f88949d5002abde99b68afccb859691a"
+application_url = "https://awarded-archive-francisco-upon.trycloudflare.com"
+embedded = true
+name = "tierra-collectives"
+handle = "tierra-collectives-1"
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-01"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,read_products,read_orders,read_customers,write_customers,read_themes,write_themes,read_content,write_content,read_inventory,read_locations,read_fulfillments,read_shipping,read_checkouts,write_checkouts,read_price_rules,read_discounts"
+
+[auth]
+redirect_urls = [
+  "https://awarded-archive-francisco-upon.trycloudflare.com/auth/callback",
+  "https://awarded-archive-francisco-upon.trycloudflare.com/auth/shopify/callback",
+  "https://awarded-archive-francisco-upon.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
