@@ -1,8 +1,8 @@
 {
   "framework": "remix",
-  "buildCommand": "npm run build",
+   "buildCommand": "npx prisma generate && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install && prisma generate",
+  "installCommand": "npm install && npx prisma generate",
   "regions": ["iad1"],
   "headers": [
     {
