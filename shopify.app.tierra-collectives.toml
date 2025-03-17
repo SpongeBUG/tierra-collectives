@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "f88949d5002abde99b68afccb859691a"
-application_url = "https://awarded-archive-francisco-upon.trycloudflare.com"
+application_url = "https://search-countries-asia-institutions.trycloudflare.com"
 embedded = true
 name = "tierra-collectives"
 handle = "tierra-collectives-1"
@@ -19,9 +19,9 @@ scopes = "write_products,read_products,read_orders,read_customers,write_customer
 
 [auth]
 redirect_urls = [
-  "https://awarded-archive-francisco-upon.trycloudflare.com/auth/callback",
-  "https://awarded-archive-francisco-upon.trycloudflare.com/auth/shopify/callback",
-  "https://awarded-archive-francisco-upon.trycloudflare.com/api/auth/callback"
+  "https://search-countries-asia-institutions.trycloudflare.com/auth/callback",
+  "https://search-countries-asia-institutions.trycloudflare.com/auth/shopify/callback",
+  "https://search-countries-asia-institutions.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
