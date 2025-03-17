@@ -1,7 +1,7 @@
 // app/components/cart/CartDrawer.tsx
 import { Dialog, Transition } from '@headlessui/react';
 import { Link } from '@remix-run/react';
-import { X } from 'lucide-react';
+import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import { Fragment } from 'react';
 
 import { Button } from '~/components/ui/Button';
@@ -10,7 +10,7 @@ import { useCart } from '~/context/CartContext';
 import { CartItem } from './CartItem';
 
 export function CartDrawer() {
-  const { cart, isOpen, closeCart, createCheckout } = useCart();
+  const { cart, isOpen, closeCart, createCheckout, updateItem, removeItem } = useCart();
   
   const handleCheckout = async () => {
     try {
@@ -34,7 +34,7 @@ export function CartDrawer() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-40 transition-opacity" />
+          <div className="fixed inset-0 bg-black/60 transition-opacity" />
         </Transition.Child>
         
         <div className="fixed inset-0 overflow-hidden">
@@ -50,16 +50,16 @@ export function CartDrawer() {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                    <div className="flex-1 overflow-y-auto py-6 px-4 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <Dialog.Title className="text-lg font-medium text-gray-900">
+                  <div className="flex h-full flex-col overflow-y-scroll bg-offblack text-ivory">
+                    <div className="flex-1 overflow-y-auto pt-6 pb-4 px-4 sm:px-6">
+                      <div className="flex items-center justify-between pb-4 border-b border-ivory/10">
+                        <Dialog.Title className="text-lg font-medium text-ivory">
                           Shopping cart ({cart.itemCount})
                         </Dialog.Title>
-                        <div className="ml-3 flex h-7 items-center">
+                        <div className="flex h-7 items-center">
                           <button
                             type="button"
-                            className="-m-2 p-2 text-gray-400 hover:text-gray-500"
+                            className="p-2 text-ivory/70 hover:text-ivory"
                             onClick={closeCart}
                           >
                             <span className="sr-only">Close panel</span>
@@ -71,20 +71,71 @@ export function CartDrawer() {
                       <div className="mt-8">
                         {cart.items.length > 0 ? (
                           <div className="flow-root">
-                            <ul className="-my-6 divide-y divide-gray-200">
+                            <ul className="divide-y divide-ivory/10">
                               {cart.items.map((item) => (
-                                <CartItem key={item.id} item={item} />
+                                <li key={item.id} className="py-6">
+                                  <div className="flex items-start space-x-4">
+                                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded bg-ivory/10">
+                                      <img
+                                        src={item.imageSrc}
+                                        alt={item.imageAlt || item.title}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    </div>
+                                    <div className="flex flex-1 flex-col">
+                                      <div>
+                                        <div className="flex justify-between">
+                                          <h3 className="text-base text-ivory">
+                                            <Link to={`/products/${item.handle}`} onClick={closeCart}>
+                                              {item.title}
+                                            </Link>
+                                          </h3>
+                                          <p className="ml-4 text-base text-ivory">
+                                            ${parseFloat(item.price.amount).toFixed(2)}
+                                            <span className="text-ivory/70 text-sm ml-1">each</span>
+                                          </p>
+                                        </div>
+                                        <p className="mt-1 text-sm text-ivory/70">{item.variantTitle}</p>
+                                      </div>
+                                      <div className="flex flex-1 items-end justify-between text-sm mt-2">
+                                        <div className="flex items-center border border-ivory/30 rounded">
+                                          <button
+                                            onClick={() => updateItem(item.id, item.quantity - 1)}
+                                            disabled={item.quantity <= 1}
+                                            className="px-2 py-1 text-ivory/70 hover:text-ivory disabled:opacity-50"
+                                          >
+                                            <Minus className="h-4 w-4" />
+                                          </button>
+                                          <span className="w-8 text-center">{item.quantity}</span>
+                                          <button
+                                            onClick={() => updateItem(item.id, item.quantity + 1)}
+                                            className="px-2 py-1 text-ivory/70 hover:text-ivory"
+                                          >
+                                            <Plus className="h-4 w-4" />
+                                          </button>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeItem(item.id)}
+                                          className="text-ivory/50 hover:text-terracotta"
+                                        >
+                                          <Trash2 className="h-5 w-5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </li>
                               ))}
                             </ul>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center py-12">
-                            <p className="text-center text-lg text-gray-500">
+                            <p className="text-center text-lg text-ivory/70">
                               Your cart is empty
                             </p>
                             <Button
                               onClick={closeCart}
-                              className="mt-4"
+                              className="mt-4 bg-terracotta hover:bg-terracotta-dark text-ivory"
                             >
                               Continue Shopping
                             </Button>
@@ -94,17 +145,17 @@ export function CartDrawer() {
                     </div>
                     
                     {cart.items.length > 0 && (
-                      <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
-                        <div className="flex justify-between text-base font-medium text-gray-900">
+                      <div className="border-t border-ivory/10 py-6 px-4 sm:px-6">
+                        <div className="flex justify-between text-base font-medium text-ivory">
                           <p>Subtotal</p>
-                          <p>{cart.subtotal}</p>
+                          <p>${parseFloat(cart.subtotal.replace(/[^0-9.]/g, '')).toFixed(2)}</p>
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500">
+                        <p className="mt-0.5 text-sm text-ivory/70">
                           Shipping and taxes calculated at checkout.
                         </p>
                         <div className="mt-6">
                           <Button
-                            className="w-full"
+                            className="w-full bg-terracotta hover:bg-terracotta-dark text-ivory py-3 rounded-sm"
                             onClick={handleCheckout}
                           >
                             Checkout
@@ -113,23 +164,22 @@ export function CartDrawer() {
                         <div className="mt-3">
                           <Button
                             variant="outline"
-                            className="w-full"
+                            className="w-full border-ivory/20 text-ivory hover:bg-ivory/10 py-3 rounded-sm"
                             asChild
                             onClick={closeCart}
                           >
                             <Link to="/cart">View Cart</Link>
                           </Button>
                         </div>
-                        <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
+                        <div className="mt-6 flex justify-center text-center text-sm text-ivory/70">
                           <p>
                             or{' '}
                             <button
                               type="button"
-                              className="font-medium text-black hover:text-gray-800"
+                              className="font-medium text-terracotta hover:text-terracotta-light"
                               onClick={closeCart}
                             >
-                              Continue Shopping
-                              <span aria-hidden="true"> &rarr;</span>
+                              Continue Shopping →
                             </button>
                           </p>
                         </div>
